@@ -15,38 +15,44 @@ import com.educandoweb.course.services.exceptions.ResourcesNotFoundException;
 
 @Service
 public class UserService {
-	
+
 	@Autowired
 	private UserRepository userRepository;
 
-	public List<User> findAll(){
+	public List<User> findAll() {
 		return userRepository.findAll();
 	}
-	
+
 	public User findById(Long id) {
 		Optional<User> obj = userRepository.findById(id);
 		return obj.orElseThrow(() -> new ResourcesNotFoundException(id));
 	}
-	
+
 	public User insert(User obj) {
 		return userRepository.save(obj);
 	}
-	
+
 	public void delete(Long id) {
 		try {
 			userRepository.deleteById(id);
-			
+
 		} catch (EmptyResultDataAccessException e) {
 			throw new ResourcesNotFoundException(id);
 		} catch (DataIntegrityViolationException e) {
 			throw new DatabaseException(e.getMessage());
 		}
 	}
-	
+
 	public User uptade(Long id, User obj) {
-		User entity = userRepository.getReferenceById(id);
-		updateData(entity, obj);
-		return userRepository.save(entity);
+		try {
+			User entity = userRepository.getReferenceById(id);
+			updateData(entity, obj);
+			return userRepository.save(entity);
+
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			throw new ResourcesNotFoundException(id);
+		}
 	}
 
 	private void updateData(User entity, User obj) {
@@ -55,4 +61,3 @@ public class UserService {
 		entity.setPhone(obj.getPhone());
 	}
 }
-
